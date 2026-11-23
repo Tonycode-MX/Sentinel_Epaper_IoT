@@ -1,0 +1,2 @@
+Flask               # El micro-framework para el servidor web
+Pillow              # La librería de procesamiento de imágenes (PIL)

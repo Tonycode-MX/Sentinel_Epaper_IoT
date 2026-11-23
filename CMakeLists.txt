@@ -1,39 +1,57 @@
-# Mínima versión requerida de CMake
+# Versión mínima de CMake requerida
 cmake_minimum_required(VERSION 3.13)
 
-# Incluir el SDK del Pico
-include(pico_sdk_init)
+# --- Configuración del SDK de la Pico (Tu método probado) ---
+# Importar el SDK usando la variable de entorno
+include($ENV{PICO_SDK_PATH}/external/pico_sdk_import.cmake)
 
-# Nombre del ejecutable (.uf2)
-project(Sentinel_Epaper_IoT C CXX ASM)
-
-# Inicializar el SDK del Pico
+# La función pico_sdk_init() se define después de la importación
 pico_sdk_init()
 
-# Definir el ejecutable a construir
-add_executable(Sentinel_Epaper_IoT
-    src/main.cpp
-    # Módulos del driver E-Paper
-    src/modules/e_paper/EPaperDriver.cpp
-    # Módulos del sensor
-    src/modules/sensors/TempSensor.cpp
-    # Módulos de comunicación
-    src/modules/comms/ESPComms.cpp
-    # Módulos de utilidades
-    src/modules/utils/ImageParser.cpp
+# --- Declaración del Proyecto ---
+# Declarar el proyecto (usamos SentinelEpaper para evitar conflictos de nombres)
+project(SentinelEpaper C CXX)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
+
+# --- Definición de Archivos Fuente ---
+set(SOURCE_DIR src)
+
+# Archivos C++ y C (main.cpp y todos los módulos)
+file(GLOB PROJECT_SOURCES
+    ${SOURCE_DIR}/main.cpp
+    ${SOURCE_DIR}/modules/comms/ESPComms.cpp
+    ${SOURCE_DIR}/modules/e_paper/EPaperDriver.cpp
+    ${SOURCE_DIR}/modules/sensors/TempSensor.cpp
 )
 
-# Enlazar las librerías necesarias del SDK
-target_link_libraries(Sentinel_Epaper_IoT
+# --- Añadir el ejecutable ---
+
+# Crear el nombre del ejecutable
+add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
+
+# --- Propiedades y Directorios ---
+
+# Añadir directorios de cabeceras para que los includes funcionen
+target_include_directories(${PROJECT_NAME} PUBLIC
+    ${SOURCE_DIR}
+    ${SOURCE_DIR}/modules/comms
+    ${SOURCE_DIR}/modules/e_paper
+    ${SOURCE_DIR}/modules/sensors
+    ${SOURCE_DIR}/modules/utils
+)
+
+# --- Enlazar librerías de Pico ---
+# Enlazar las librerías necesarias
+target_link_libraries(${PROJECT_NAME}
     pico_stdlib
-    hardware_spi        # Necesario para el E-Paper
-    hardware_i2c        # Necesario para el sensor I2C
-    hardware_uart       # Necesario para la comunicación con el ESP8266
+    hardware_spi
+    hardware_uart
+    hardware_gpio
 )
 
-# Configuración de propiedades para la compilación
-pico_enable_stdio_usb(Sentinel_Epaper_IoT 1) # Habilitar serial sobre USB para debugging
-pico_enable_stdio_uart(Sentinel_Epaper_IoT 0) # Deshabilitar UART para usarlo con el ESP8266
+pico_enable_stdio_usb(${PROJECT_NAME} 1)
+pico_enable_stdio_uart(${PROJECT_NAME} 1)
 
-# Crear el archivo UF2 para flashear
-pico_add_extra_outputs(Sentinel_Epaper_IoT)
+# Añadir la generación de archivos UF2 y ELF
+pico_add_extra_outputs(${PROJECT_NAME})
