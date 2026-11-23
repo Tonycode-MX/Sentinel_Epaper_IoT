@@ -32,7 +32,7 @@
 
 // --- Credenciales Wi-Fi (Si las almacenas en la Pico para enviarlas al ESP) ---
 // NOTA: Es más común configurarlas directamente en el ESP para firmware AT
-#define WIFI_SSID           "POCO X5 5G"
-#define WIFI_PASSWORD       "tonycool"
+#define WIFI_SSID           "YOUR_SSID"
+#define WIFI_PASSWORD       "PASSWORD"
 
 #endif // CONFIG_H
